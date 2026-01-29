@@ -71,6 +71,15 @@
 #define SHT35_COMMAND_WRITE_LOW_ALERT_LIMIT_CLEAR     0x610BU        /**< write low alert limit clear command */
 
 /**
+ * @brief helper macros
+ */
+#ifdef DRIVER_SHT35_WITH_DEBUG_PRINT
+#define DRIVER_SHTC3_DEBUG_PRINT(FMT, ...)           handle->debug_print(FMT, ##__VA_ARGS__)
+#else
+#define DRIVER_SHT35_DEBUG_PRINT(FMT, ...)           do {} while(0)
+#endif
+
+/**
  * @brief     write the command
  * @param[in] *handle pointer to an sht35 handle structure
  * @param[in] cmd written command
@@ -181,44 +190,46 @@ uint8_t sht35_init(sht35_handle_t *handle)
     {
         return 2;                                                            /* return error */
     }
+#ifdef DRIVER_SHT35_WITH_DEBUG_PRINT
     if (handle->debug_print == NULL)                                         /* check debug_print */
     {
         return 3;                                                            /* return error */
     }
+#endif
     if (handle->iic_init == NULL)                                            /* check iic_init */
     {
-        handle->debug_print("sht35: iic_init is null.\n");                   /* iic_init is null */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: iic_init is null.\n");              /* iic_init is null */
        
         return 3;                                                            /* return error */
     }
     if (handle->iic_deinit == NULL)                                          /* check iic_deinit */
     {
-        handle->debug_print("sht35: iic_deinit is null.\n");                 /* iic_deinit is null */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: iic_deinit is null.\n");            /* iic_deinit is null */
        
         return 3;                                                            /* return error */
     }
     if (handle->iic_read_address16 == NULL)                                  /* check iic_read_address16 */
     {
-        handle->debug_print("sht35: iic_read_address16 is null.\n");         /* iic_read_address16 is null */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: iic_read_address16 is null.\n");    /* iic_read_address16 is null */
        
         return 3;                                                            /* return error */
     }
     if (handle->iic_write_address16 == NULL)                                 /* check iic_write_address16 */
     {
-        handle->debug_print("sht35: iic_write_address16 is null.\n");        /* iic_write_address16 is null */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: iic_write_address16 is null.\n");   /* iic_write_address16 is null */
        
         return 3;                                                            /* return error */
     }
     if (handle->delay_ms == NULL)                                            /* check delay_ms */
     {
-        handle->debug_print("sht35: delay_ms is null.\n");                   /* delay_ms is null */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: delay_ms is null.\n");              /* delay_ms is null */
        
         return 3;                                                            /* return error */
     }
     
     if (handle->iic_init() != 0)                                             /* iic init */
     {
-        handle->debug_print("sht35: iic init failed.\n");                    /* iic init failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: iic init failed.\n");               /* iic init failed */
        
         return 1;                                                            /* return error */
     }
@@ -226,7 +237,7 @@ uint8_t sht35_init(sht35_handle_t *handle)
     res = a_sht35_write(handle, command);                                    /* write command */
     if (res != 0)                                                            /* check result */
     {
-        handle->debug_print("sht35: write command failed.\n");               /* write command failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: write command failed.\n");          /* write command failed */
         (void)handle->iic_deinit();                                          /* close iic */
         
         return 1;                                                            /* return error */
@@ -264,13 +275,13 @@ uint8_t sht35_deinit(sht35_handle_t *handle)
     res = a_sht35_write(handle, command);                             /* write command */
     if (res != 0)                                                     /* check result */
     {
-        handle->debug_print("sht35: write command failed.\n");        /* write command failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: write command failed.\n");   /* write command failed */
         
         return 1;                                                     /* return error */
     }
     if (handle->iic_deinit() != 0)                                    /* iic deinit */
     {
-        handle->debug_print("sht35: iic deinit failed.\n");           /* iic deinit failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: iic deinit failed.\n");      /* iic deinit failed */
        
         return 1;                                                     /* return error */
     }
@@ -354,7 +365,7 @@ uint8_t sht35_get_status(sht35_handle_t *handle, uint16_t *status)
     res = a_sht35_read(handle, command, (uint8_t *)data, 3);        /* read status */
     if (res != 0)                                                   /* check result */
     {
-        handle->debug_print("sht35: read status failed.\n");        /* read status failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: read status failed.\n");   /* read status failed */
        
         return 1;                                                   /* return error */
     }
@@ -366,7 +377,7 @@ uint8_t sht35_get_status(sht35_handle_t *handle, uint16_t *status)
     }
     else
     {
-        handle->debug_print("sht35: crc check failed.\n");          /* crc check failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: crc check failed.\n");     /* crc check failed */
        
         return 1;                                                   /* return error */
     }
@@ -400,7 +411,7 @@ uint8_t sht35_clear_status(sht35_handle_t *handle)
     res = a_sht35_write(handle, command);                             /* write command */
     if (res != 0)                                                     /* check result */
     {
-        handle->debug_print("sht35: write command failed.\n");        /* write command failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: write command failed.\n");   /* write command failed */
            
         return 1;                                                     /* return error */
     }
@@ -505,7 +516,7 @@ uint8_t sht35_single_read(sht35_handle_t *handle, sht35_bool_t clock_stretching_
         }
         else
         {
-            handle->debug_print("sht35: clock stretching is invalid.\n");          /* clock stretching is invalid */
+            DRIVER_SHT35_DEBUG_PRINT("sht35: clock stretching is invalid.\n");     /* clock stretching is invalid */
            
             return 1;                                                              /* return error */
         }
@@ -522,7 +533,7 @@ uint8_t sht35_single_read(sht35_handle_t *handle, sht35_bool_t clock_stretching_
         }
         else
         {
-            handle->debug_print("sht35: clock stretching is invalid.\n");          /* clock stretching is invalid */
+            DRIVER_SHT35_DEBUG_PRINT("sht35: clock stretching is invalid.\n");     /* clock stretching is invalid */
            
             return 1;                                                              /* return error */
         }
@@ -539,14 +550,14 @@ uint8_t sht35_single_read(sht35_handle_t *handle, sht35_bool_t clock_stretching_
         }
         else
         {
-            handle->debug_print("sht35: clock stretching is invalid.\n");          /* clock stretching is invalid */
+            DRIVER_SHT35_DEBUG_PRINT("sht35: clock stretching is invalid.\n");     /* clock stretching is invalid */
            
             return 1;                                                              /* return error */
         }
     }
     else
     {
-        handle->debug_print("sht35: repeatability is invalid.\n");                 /* repeatability is invalid */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: repeatability is invalid.\n");            /* repeatability is invalid */
        
         return 1;                                                                  /* return error */
     }
@@ -554,19 +565,19 @@ uint8_t sht35_single_read(sht35_handle_t *handle, sht35_bool_t clock_stretching_
     res = a_sht35_read(handle, command, (uint8_t *)data, 6);                       /* read data */
     if (res != 0)                                                                  /* check result */
     {
-        handle->debug_print("sht35: read data failed.\n");                         /* read data failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: read data failed.\n");                    /* read data failed */
        
         return 1;                                                                  /* return error */
     }
     if (a_sht35_crc((uint8_t *)data, 2) != data[2])                                /* check crc */
     {
-        handle->debug_print("sht35: crc check failed.\n");                         /* crc check failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: 1 crc check failed.\n");                  /* crc check failed */
        
         return 1;                                                                  /* return error */
     }
     if (a_sht35_crc((uint8_t *)&data[3], 2) != data[5])                            /* check crc */
     {
-        handle->debug_print("sht35: crc check failed.\n");                         /* crc check failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: 2 crc check failed.\n");                  /* crc check failed */
        
         return 1;                                                                  /* return error */
     }
@@ -627,7 +638,7 @@ uint8_t sht35_start_continuous_read(sht35_handle_t *handle, sht35_rate_t rate)
         }
         else
         {
-            handle->debug_print("sht35: rate is invalid.\n");            /* rate is invalid */
+            DRIVER_SHT35_DEBUG_PRINT("sht35: rate is invalid.\n");       /* rate is invalid */
            
             return 1;                                                    /* return error */
         }
@@ -656,7 +667,7 @@ uint8_t sht35_start_continuous_read(sht35_handle_t *handle, sht35_rate_t rate)
         }
         else
         {
-            handle->debug_print("sht35: rate is invalid.\n");            /* rate is invalid */
+            DRIVER_SHT35_DEBUG_PRINT("sht35: rate is invalid.\n");       /* rate is invalid */
            
             return 1;                                                    /* return error */
         }
@@ -685,21 +696,21 @@ uint8_t sht35_start_continuous_read(sht35_handle_t *handle, sht35_rate_t rate)
         }
         else
         {
-            handle->debug_print("sht35: rate is invalid.\n");            /* rate is invalid */
+            DRIVER_SHT35_DEBUG_PRINT("sht35: rate is invalid.\n");       /* rate is invalid */
            
             return 1;                                                    /* return error */
         }
     }
     else
     {
-        handle->debug_print("sht35: repeatability is invalid.\n");       /* repeatability is invalid */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: repeatability is invalid.\n");  /* repeatability is invalid */
        
         return 1;                                                        /* return error */
     }
     res = a_sht35_write(handle, command);                                /* write command */
     if (res != 0)                                                        /* check result */
     {
-        handle->debug_print("sht35: write command failed.\n");           /* write command failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: write command failed.\n");      /* write command failed */
            
         return 1;                                                        /* return error */
     }
@@ -735,7 +746,7 @@ uint8_t sht35_stop_continuous_read(sht35_handle_t *handle)
     res = a_sht35_write(handle, command);                             /* write command */
     if (res != 0)                                                     /* check result */
     {
-        handle->debug_print("sht35: write command failed.\n");        /* write command failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: write command failed.\n");   /* write command failed */
            
         return 1;                                                     /* return error */
     }
@@ -778,19 +789,19 @@ uint8_t sht35_continuous_read(sht35_handle_t *handle,
     res = a_sht35_read(handle, command, (uint8_t *)data, 6);                       /* read data */
     if (res != 0)                                                                  /* check result */
     {
-        handle->debug_print("sht35: read data failed.\n");                         /* read data failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: read data failed.\n");                    /* read data failed */
        
         return 1;                                                                  /* return error */
     }
     if (a_sht35_crc((uint8_t *)data, 2) != data[2])                                /* check crc */
     {
-        handle->debug_print("sht35: crc check failed.\n");                         /* crc check failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: crc check failed.\n");                    /* crc check failed */
        
         return 1;                                                                  /* return error */
     }
     if (a_sht35_crc((uint8_t *)&data[3], 2) != data[5])                            /* check crc */
     {
-        handle->debug_print("sht35: crc check failed.\n");                         /* crc check failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: crc check failed.\n");                    /* crc check failed */
        
         return 1;                                                                  /* return error */
     }
@@ -830,7 +841,7 @@ uint8_t sht35_set_art(sht35_handle_t *handle)
     res = a_sht35_write(handle, command);                             /* write command */
     if (res != 0)                                                     /* check result */
     {
-        handle->debug_print("sht35: write command failed.\n");        /* write command failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: write command failed.\n");   /* write command failed */
            
         return 1;                                                     /* return error */
     }
@@ -866,7 +877,7 @@ uint8_t sht35_soft_reset(sht35_handle_t *handle)
     res = a_sht35_write(handle, command);                             /* write command */
     if (res != 0)                                                     /* check result */
     {
-        handle->debug_print("sht35: write command failed.\n");        /* write command failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: write command failed.\n");   /* write command failed */
            
         return 1;                                                     /* return error */
     }
@@ -909,14 +920,14 @@ uint8_t sht35_set_heater(sht35_handle_t *handle, sht35_bool_t enable)
     }
     else
     {
-        handle->debug_print("sht35: bool is invalid.\n");             /* bool is invalid */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: bool is invalid.\n");        /* bool is invalid */
            
         return 1;                                                     /* return error */
     }
     res = a_sht35_write(handle, command);                             /* write command */
     if (res != 0)                                                     /* check result */
     {
-        handle->debug_print("sht35: write command failed.\n");        /* write command failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: write command failed.\n");   /* write command failed */
            
         return 1;                                                     /* return error */
     }
@@ -954,19 +965,19 @@ uint8_t sht35_get_serial_number(sht35_handle_t *handle, uint8_t sn[4])
     res = a_sht35_read(handle, command, (uint8_t *)data, 6);        /* read data */
     if (res != 0)                                                   /* check result */
     {
-        handle->debug_print("sht35: read data failed.\n");          /* read data failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: read data failed.\n");     /* read data failed */
        
         return 1;                                                   /* return error */
     }
     if (a_sht35_crc((uint8_t *)data, 2) != data[2])                 /* check crc */
     {
-        handle->debug_print("sht35: crc check failed.\n");          /* crc check failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: crc check failed.\n");     /* crc check failed */
        
         return 1;                                                   /* return error */
     }
     if (a_sht35_crc((uint8_t *)&data[3], 2) != data[5])             /* check crc */
     {
-        handle->debug_print("sht35: crc check failed.\n");          /* crc check failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: crc check failed.\n");     /* crc check failed */
        
         return 1;                                                   /* return error */
     }
@@ -1012,7 +1023,7 @@ uint8_t sht35_set_high_alert_limit(sht35_handle_t *handle, uint16_t set, uint16_
     res = a_sht35_write_bytes(handle, command, (uint8_t *)data, 3);       /* write data */
     if (res != 0)                                                         /* check result */
     {
-        handle->debug_print("sht35: write failed.\n");                    /* write failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: write failed.\n");               /* write failed */
        
         return 1;                                                         /* return error */
     }
@@ -1024,7 +1035,7 @@ uint8_t sht35_set_high_alert_limit(sht35_handle_t *handle, uint16_t set, uint16_
     res = a_sht35_write_bytes(handle, command, (uint8_t *)data, 3);       /* write data */
     if (res != 0)                                                         /* check result */
     {
-        handle->debug_print("sht35: write failed.\n");                    /* write failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: write failed.\n");               /* write failed */
        
         return 1;                                                         /* return error */
     }
@@ -1063,13 +1074,13 @@ uint8_t sht35_get_high_alert_limit(sht35_handle_t *handle, uint16_t *set, uint16
     res = a_sht35_read(handle, command, (uint8_t *)data, 3);        /* read data */
     if (res != 0)                                                   /* check result */
     {
-        handle->debug_print("sht35: read data failed.\n");          /* read data failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: read data failed.\n");     /* read data failed */
        
         return 1;                                                   /* return error */
     }
     if (a_sht35_crc((uint8_t *)data, 2) != data[2])                 /* check crc */
     {
-        handle->debug_print("sht35: crc check failed.\n");          /* crc check failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: crc check failed.\n");     /* crc check failed */
        
         return 1;                                                   /* return error */
     }
@@ -1079,13 +1090,13 @@ uint8_t sht35_get_high_alert_limit(sht35_handle_t *handle, uint16_t *set, uint16
     res = a_sht35_read(handle, command, (uint8_t *)data, 3);        /* read data */
     if (res != 0)                                                   /* check result */
     {
-        handle->debug_print("sht35: read data failed.\n");          /* read data failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: read data failed.\n");     /* read data failed */
        
         return 1;                                                   /* return error */
     }
     if (a_sht35_crc((uint8_t *)data, 2) != data[2])                 /* check crc */
     {
-        handle->debug_print("sht35: crc check failed.\n");          /* crc check failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: crc check failed.\n");     /* crc check failed */
        
         return 1;                                                   /* return error */
     }
@@ -1128,7 +1139,7 @@ uint8_t sht35_set_low_alert_limit(sht35_handle_t *handle, uint16_t set, uint16_t
     res = a_sht35_write_bytes(handle, command, (uint8_t *)data, 3);       /* write data */
     if (res != 0)                                                         /* check result */
     {
-        handle->debug_print("sht35: write failed.\n");                    /* write failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: write failed.\n");               /* write failed */
        
         return 1;                                                         /* return error */
     }
@@ -1140,7 +1151,7 @@ uint8_t sht35_set_low_alert_limit(sht35_handle_t *handle, uint16_t set, uint16_t
     res = a_sht35_write_bytes(handle, command, (uint8_t *)data, 3);       /* write data */
     if (res != 0)                                                         /* check result */
     {
-        handle->debug_print("sht35: write failed.\n");                    /* write failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: write failed.\n");               /* write failed */
        
         return 1;                                                         /* return error */
     }
@@ -1179,13 +1190,13 @@ uint8_t sht35_get_low_alert_limit(sht35_handle_t *handle, uint16_t *set, uint16_
     res = a_sht35_read(handle, command, (uint8_t *)data, 3);        /* read data */
     if (res != 0)                                                   /* check result */
     {
-        handle->debug_print("sht35: read data failed.\n");          /* read data failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: read data failed.\n");     /* read data failed */
        
         return 1;                                                   /* return error */
     }
     if (a_sht35_crc((uint8_t *)data, 2) != data[2])                 /* check crc */
     {
-        handle->debug_print("sht35: crc check failed.\n");          /* crc check failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: crc check failed.\n");     /* crc check failed */
        
         return 1;                                                   /* return error */
     }
@@ -1195,13 +1206,13 @@ uint8_t sht35_get_low_alert_limit(sht35_handle_t *handle, uint16_t *set, uint16_
     res = a_sht35_read(handle, command, (uint8_t *)data, 3);        /* read data */
     if (res != 0)                                                   /* check result */
     {
-        handle->debug_print("sht35: read data failed.\n");          /* read data failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: read data failed.\n");     /* read data failed */
        
         return 1;                                                   /* return error */
     }
     if (a_sht35_crc((uint8_t *)data, 2) != data[2])                 /* check crc */
     {
-        handle->debug_print("sht35: crc check failed.\n");          /* crc check failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: crc check failed.\n");     /* crc check failed */
        
         return 1;                                                   /* return error */
     }
@@ -1276,7 +1287,7 @@ uint8_t sht35_irq_handler(sht35_handle_t *handle)
     res = a_sht35_read(handle, command, (uint8_t *)data, 3);                        /* read status */
     if (res != 0)                                                                   /* check result */
     {
-        handle->debug_print("sht35: read status failed.\n");                        /* read status failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: read status failed.\n");                   /* read status failed */
        
         return 1;                                                                   /* return error */
     }
@@ -1287,7 +1298,7 @@ uint8_t sht35_irq_handler(sht35_handle_t *handle)
         res = a_sht35_write(handle, command);                                       /* write command */
         if (res != 0)                                                               /* check result */
         {
-            handle->debug_print("sht35: write command failed.\n");                  /* write command failed */
+            DRIVER_SHT35_DEBUG_PRINT("sht35: write command failed.\n");             /* write command failed */
                
             return 1;                                                               /* return error */
         }
@@ -1318,7 +1329,7 @@ uint8_t sht35_irq_handler(sht35_handle_t *handle)
     }
     else
     {
-        handle->debug_print("sht35: crc check failed.\n");                          /* crc check failed */
+        DRIVER_SHT35_DEBUG_PRINT("sht35: crc check failed.\n");                     /* crc check failed */
        
         return 1;                                                                   /* return error */
     }
