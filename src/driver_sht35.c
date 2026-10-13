@@ -583,8 +583,14 @@ uint8_t sht35_single_read(sht35_handle_t *handle, sht35_bool_t clock_stretching_
     }
     *temperature_raw = (uint16_t)((((uint16_t)data[0]) << 8) | data[1]);           /* get raw temperature */
     *humidity_raw = (uint16_t)((((uint16_t)data[3]) << 8) | data[4]);              /* get raw humidity */
+
+#ifdef DRIVER_SHT35_WITH_FLOAT_OUTPUT
     *temperature_s = (float)(*temperature_raw) / 65535.0f * 175.0f - 45.0f;        /* convert raw temperature */
     *humidity_s = (float)(*humidity_raw) / 65535.0f * 100.0f;                      /* convert raw humidity */
+#else
+    (void)temperature_s;
+    (void)humidity_s;
+#endif
     
     return 0;                                                                      /* success return 0 */
 }
@@ -807,8 +813,13 @@ uint8_t sht35_continuous_read(sht35_handle_t *handle,
     }
     *temperature_raw = (uint16_t)((((uint16_t)data[0]) << 8) | data[1]);           /* get raw temperature */
     *humidity_raw = (uint16_t)((((uint16_t)data[3]) << 8) | data[4]);              /* get raw humidity */
+#ifdef DRIVER_SHT35_WITH_FLOAT_OUTPUT
     *temperature_s = (float)(*temperature_raw) / 65535.0f * 175.0f - 45.0f;        /* convert raw temperature */
     *humidity_s = (float)(*humidity_raw) / 65535.0f * 100.0f;                      /* convert raw humidity */
+#else
+    (void)temperature_s;
+    (void)humidity_s;
+#endif
     
     return 0;                                                                      /* success return 0 */
 }
